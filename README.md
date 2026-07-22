@@ -8,18 +8,19 @@ I own three computers, each with a different operating system. I needed a way to
 
 1. Charged old phone to full capacity to turn it on
 2. Factory Reset the phone to retrieve full storage capacity
-3. Turned off all location tracking and google account setup
+3. Turned off all location tracking and Google account setup
 4. Removed/disabled bloatware
-5. Allow Chrome to side-load files
-6. Installed F-Droid from PlayStore
+5. Allow Chrome to side-load external files
+6. Installed F-Droid from Chrome browser
 7. Allowed F-Droid to install applications
 8. Installed Termux from F-Droid
 9. Setup server with Termux and launched it
 10. Setup storage path for Termux
 11. Set a password for Termux
-12. Find username and IP address for Termux
-13. Generated new SSH keygen on host mac, then push public key to phone.
-14. Connect with key-only and started uploading files.
+12. Setup static IP address for phone 
+13. Find username for Termux 
+14. Generated new SSH keygen on client mac, then push public key to phone 
+15. Connect with key-only and started uploading files
 
 ## What You Need
 
@@ -45,12 +46,18 @@ I own three computers, each with a different operating system. I needed a way to
    ```
    passwd
    ```
-5. Find your Termux username and IP:
+5. Find your Termux username
    ```
    whoami        # e.g. u0_a209
-   ifconfig      # look under wlan0 for your local IP, e.g. 10.0.0.85
    ```
-6. Setup Termux's storage folder:
+   
+6. Go to phone network settings and set a private IP address.
+   
+   Settings > Wi-Fi > Select ISP > Select pencil icon to edit details > Select IP address 
+   - Set IP setting to static 
+   - Set desired IP address and appropriate subnet mask
+
+7. Setup Termux's storage folder:
    ```
    termux-setup-storage
    ```
@@ -103,15 +110,7 @@ Android will kill background apps by default. To keep sshd running:
 
 ---
 
-## Part 4: Networking Notes
-
-- **Same Wi-Fi:** works immediately using the phone's local IP (e.g. `10.0.0.85`).
-- **Remote access:** either forward port 8022 on your router to the phone's local IP, or (recommended) put the phone on a **Tailscale** network instead — gives a stable address reachable from anywhere with zero exposed ports.
-- **Mobile data:** carrier-grade NAT means port forwarding won't work at all when the phone is off Wi-Fi — Tailscale is the only reliable option in that case.
-
----
-
-## Part 5: Transferring Files (scp)
+## Part 4: Transferring Files (scp)
 
 Push a file to the phone:
 ```
@@ -146,13 +145,3 @@ Once `~/storage/downloads` exists, you can scp straight into it going forward.
 | Key auth silently falls back to password | Wrong permissions on the phone | `chmod 700 ~/.ssh` and `chmod 600 ~/.ssh/authorized_keys` |
 | `ssh-copy-id`/password auth fails outright | No password set on the Termux user | Run `passwd` in Termux first |
 | `scp: failed to upload file ... to ~/storage/downloads` | `~/storage` doesn't exist yet | Run `termux-setup-storage` in Termux, grant the permission prompt |
-
----
-
-## Key Takeaways
-
-- Private key = client (the device you connect **from**). Public key = server (the device you connect **to**).
-- Each new client gets its own key pair.
-- Termux's sshd defaults to port **8022**, always pass `-p 8022` / `-P 8022`.
-- `~/` in Termux is sandboxed; `~/storage/...` is the bridge to shared Android storage.
-- For anything beyond same-Wi-Fi access, Tailscale beats port forwarding on every axis (security, stability, mobile-data support).
