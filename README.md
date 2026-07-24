@@ -184,6 +184,119 @@ The final products is a shared network drive where I can easily drag-and-drop fo
 
 Tried connecting from Linux Mint's built-in file sharing ("Connect to Server") to test the share — this failed. This is expected: the working client-side path was Solid Explorer on Android, not Linux Mint's own file manager.
 
+## Part 6: Security
+
+I originally created scripts to connect and transfer files. While I was proud to share these, I realized this was an unsecure practice. It not only included the server's static IP address, but was set to Termux's default, insecure 8022 port. 
+
+## Step 1 — Install sshd and locate the config file
+**Where: Phone**
+
+```bash
+pkg install openssh
+```
+
+Config file lives at:
+```bash
+$PREFIX/etc/ssh/sshd_config
+```
+(`$PREFIX` is typically `/data/data/com.termux/files/usr`)
+
+sshd is the server software — it needs to live on the machine accepting connections, i.e. the phone.
+
+---
+
+## Step 2 — Generate an SSH key pair
+**Where: Client**
+
+```bash
+ssh-keygen -t ed25519 -C "your-label-here"
+```
+
+Press enter through the prompts, or set a passphrase for extra protection. This creates:
+- `~/.ssh/id_ed25519` — private key, **never share this**
+- `~/.ssh/id_ed25519.pub` — public key, safe to copy/share
+
+Generate this on the client, not the phone — the private key should stay with the device you're connecting from.
+
+---
+
+## Step 3 — Copy the public key to the phone
+**Where: Client (pushes to Phone)**
+
+```bash
+ssh-copy-id -p 8022 u0_a123@<phone-ip>
+```
+
+(Termux usernames look like `u0_a123` — run `whoami` on the phone if unsure. Port 8022 is Termux's default sshd port at this stage, before you change it in Step 5.)
+
+If `ssh-copy-id` isn't available, do it manually **on the phone**:
+```bash
+mkdir -p ~/.ssh
+echo "paste-your-public-key-contents-here" >> ~/.ssh/authorized_keys
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/authorized_keys
+```
+
+---
+
+## Step 4 — Test key-based login BEFORE disabling passwords
+**Where: Client**
+
+```bash
+ssh -p 8022 u0_a123@<phone-ip>
+```
+
+Confirm you log in without being prompted for a password.
+
+⚠️ **Don't skip this.** If key auth isn't actually working yet and you disable password auth in Step 5, you'll lock yourself out with no way back in.
+
+---
+
+## Step 5 — Edit sshd_config
+**Where: Phone**
+
+```bash
+nano $PREFIX/etc/ssh/sshd_config
+```
+
+Set (or add) these lines:
+```
+PasswordAuthentication no
+PermitRootLogin no
+Port 2222
+```
+
+Notes:
+- Pick a port other than 22 (blocked anyway — Termux can't bind ports below 1024 without root) and other than 8022 (the old default). Avoid obvious SSH-adjacent numbers like 2222/12022 in practice — bots specifically probe those. Something random in the 10000–65535 range is a better real-world choice.
+- This is the file that enforces "key-only, no root login" — the core of the lockdown.
+
+---
+
+## Step 6 — Restart sshd
+**Where: Phone**
+
+```bash
+pkill sshd
+sshd
+```
+
+This applies the config changes. Termux has no persistent init system, so this restart only lasts for the current session — a reboot or app kill will require restarting sshd manually (or setting up Termux:Boot, a separate step).
+
+---
+
+## Step 7 — Test again on the new port
+**Where: Client**
+
+```bash
+ssh -p 2222 u0_a123@<phone-ip>
+```
+
+(Use whatever port you actually set in Step 5.)
+
+⚠️ **Keep your original session (from Step 4) open** until this new connection is confirmed working. If the new port/config is broken, you still have a working fallback session to fix it from — don't close all sessions until you've verified access.
+
+---
+
 ---
 
 ## Technical Difficulties (Samba)
