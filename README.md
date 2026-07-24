@@ -180,34 +180,6 @@ The final products is a shared network drive where I can easily drag-and-drop fo
 
 ![Final Samba shared network drive on Linux machine.](/assets/Samba-network-drive.png "Linux/Samba shared network drive")
 
-## Scripts
-To make connections easier across computers, and because this project is meant to work off any operating system, I created a series of scripts that make interacting with the server easier. With Samba enabled, the scripts are an additional tool to have. For each script, I created both a shell and PowerShell version. Run these on the client machine to start a connection, or send and retrieve files.
-
-```
-connect.sh
-```
-Creates a direct connection to the termux server.
-
-```
-retrieve_file.sh
-```
-Retrieve a file from the server by inputting the full path name, then send it to the local `~/Downloads/` folder.
-
-```
-retrieve_folder.sh
-```
-Retrieve a folder from the server by inputting the full path name. Send to the local `~/Downloads/` folder.
-
-```
-upload_file.sh
-```
-Upload a new file and send to Termux's `~/storage/downloads/` path.
-
-```
-upload_folder.sh
-```
-Upload a new folder to Termux's `~/storage/downloads/` path.
-
 ### Testing note (Linux Mint side)
 
 Tried connecting from Linux Mint's built-in file sharing ("Connect to Server") to test the share — this failed. This is expected: the working client-side path was Solid Explorer on Android, not Linux Mint's own file manager.
