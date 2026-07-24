@@ -1,4 +1,4 @@
-# Phone Server
+# Termux Server on Android 14
 ## Repurposing old Android into dedicated file server
 
 ### Purpose
@@ -198,7 +198,7 @@ Tried connecting from Linux Mint's built-in file sharing ("Connect to Server") t
 - Diagnosis: **Samba itself was not properly installed** on the Linux machine — the real root cause all along
 
 **Resolution**
-- Abandoned the manual/source build entirely
+- Abandoned the manual/source build entirely/home/pico/termux_server/Termux-Server-on-Android-14/README.md
 - Switched to the [Ubuntu Samba tutorial](https://ubuntu.com/tutorials/install-and-configure-samba#4-setting-up-user-accounts-and-connecting-to-share) (Part 5 above)
 - Worked immediately once Samba was properly installed via the package manager
 
