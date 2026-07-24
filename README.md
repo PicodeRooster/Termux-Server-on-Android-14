@@ -2,7 +2,9 @@
 ## Repurposing old Android into dedicated file server
 
 ### Purpose
-I own three computers, each with a different operating system. I needed a way to easily store and retrieve data, such as project files and ebooks. I learned a while back a phone can function just as much as a daemon as any other computer, with the caveat of needing to establish a static IP address for it and maintain the battery life. The downside to this is both less storage than a computer and the real possibility of battery death. For this, a backup should be placed to maintain access to the server at all times. 
+I own three computers, each with a different operating system. I needed a way to easily store and retrieve data, such as project files and ebooks. I learned a while back a phone can function just as much as a daemon as any other computer, with the caveat of needing to establish a static IP address for it and maintain the battery life. The downside to this is both less storage than a computer and the real possibility of battery death. For this, a backup should be placed to maintain access to the server at all times.
+
+This project also grew out of a real, immediate need: my Linux machine broke down and I couldn't afford to sit around without access to my project files. An old Android phone became the stopgap — and then the permanent solution.
 
 ### Steps Taken
 
@@ -17,9 +19,9 @@ I own three computers, each with a different operating system. I needed a way to
 9. Setup server with Termux and launched it
 10. Setup storage path for Termux
 11. Set a password for Termux
-12. Setup static IP address for phone 
-13. Find username for Termux 
-14. Generated new SSH keygen on client mac, then push public key to phone 
+12. Setup static IP address for phone
+13. Find username for Termux
+14. Generated new SSH keygen on client mac, then push public key to phone
 15. Connect with key-only and started uploading files
 
 ## What You Need
@@ -50,11 +52,11 @@ I own three computers, each with a different operating system. I needed a way to
    ```
    whoami        # e.g. u0_a209
    ```
-   
+
 6. Go to phone network settings and set a private IP address.
-   
-   Settings > Wi-Fi > Select ISP > Select pencil icon to edit details > Select IP address 
-   - Set IP setting to static 
+
+   Settings > Wi-Fi > Select ISP > Select pencil icon to edit details > Select IP address
+   - Set IP setting to static
    - Set desired IP address and appropriate subnet mask
 
 7. Setup Termux's storage folder:
@@ -85,12 +87,12 @@ The **private key stays on the client**. The **public key goes on the server** (
    type $env:USERPROFILE\.ssh\id_ed25519.pub | ssh -p 8022 u0_a209@10.0.0.85 "cat >> ~/.ssh/authorized_keys"
    ```
 3. Connect key-only from now on:
-   
+
    **Ubuntu/Debian & mac:**
    ```
    ssh -i ~/.ssh/id_ed25519 -p 8022 u0_a209@10.0.0.85
    ```
-   
+
    **Windows:**
    ```
    ssh -i $env:USERPROFILE\.ssh\id_ed25519 -p 8022 u0_a209@10.0.0.85
@@ -106,7 +108,21 @@ Android will kill background apps by default. To keep sshd running:
 
 - Disable battery optimization for Termux (Android Settings > Apps > Termux > Battery)
 - Install the Termux:API add-on and run `termux-wake-lock`
-- Install **Termux:Boot** so sshd can auto-start on power-on instead of requiring the app to be manually opened
+  - To release it later: `termux-wake-unlock`
+- Install **Termux:Boot** (from F-Droid) so sshd can auto-start on power-on instead of requiring the app to be manually opened:
+  ```
+  mkdir -p ~/.termux/boot
+  nano ~/.termux/boot/start-sshd.sh
+  ```
+  Contents:
+  ```
+  #!/data/data/com.termux/files/usr/bin/sh
+  sshd
+  ```
+  Make executable:
+  ```
+  chmod +x ~/.termux/boot/start-sshd.sh
+  ```
 
 ---
 
@@ -137,6 +153,62 @@ Once `~/storage/downloads` exists, you can scp straight into it going forward.
 
 ---
 
+## Part 5: Alternative File Sharing (Samba/SMB)
+
+Before settling on SSH/scp as the primary transfer method, I also explored **Samba** as a GUI-based alternative — mounting the Linux machine as a network share and browsing it from Android, rather than pushing/pulling files via command line.
+
+### Setup
+
+- Followed the [Ubuntu Samba tutorial](https://ubuntu.com/tutorials/install-and-configure-samba#4-setting-up-user-accounts-and-connecting-to-share), specifically Step 4 (user accounts / share setup)
+- Created a Samba account using the computer's existing username, with a separate new password for Samba itself
+- Stopped following the tutorial at Step 4 — didn't continue further into the guide
+
+### Client: Solid Explorer (Android)
+
+Android 14 has no native SMB/SMBnative support — shared network connections aren't supported out of the box. This meant a third-party app was required to act as the SMB client:
+
+1. Open Solid Explorer's **Storage Manager**
+2. Tap **+** → **LAN/SMB**
+3. Linux machine appears as discoverable
+4. Go to **Authentication > Username and Password**
+5. Enter the Samba credentials created above
+6. File share connects successfully
+
+### Testing note (Linux Mint side)
+
+Tried connecting from Linux Mint's built-in file sharing ("Connect to Server") to test the share — this failed. This is expected: the working client-side path was Solid Explorer on Android, not Linux Mint's own file manager.
+
+---
+
+## Technical Difficulties (Samba)
+
+**Attempt 1: Manual install from Samba.org (source)**
+- Tried installing directly from the official source at [samba.org](https://www.samba.org/), following their wiki for manual configuration
+- Manually installed all missing dependencies/packages, following the guide closely
+- Troubleshot issues with the `configure` command and sudo privilege problems
+- Despite getting through the build/config process, **could not get Samba to actually start** this way
+
+**Attempt 2: Android 14's lack of native SMB support**
+- Android 14 does not support shared network connections natively — no built-in SMB client
+- First tried **SambaLite** (to stay within F-Droid) — could not get it to detect the Linux machine
+- Asked Claude Code and Gemini for recommendations; both pointed to **Solid Explorer**
+- Installed Solid Explorer from the Google Play Store
+- Still could not see the Linux machine at first — but it immediately detected a **Windows** machine on the network (Network Discovery had recently been enabled there), confirming the app itself worked correctly
+- Reviewed firewall settings, configured to allow SMB connections, retried
+- Diagnosis: **Samba itself was not properly installed** on the Linux machine — the real root cause all along
+
+**Resolution**
+- Abandoned the manual/source build entirely
+- Switched to the [Ubuntu Samba tutorial](https://ubuntu.com/tutorials/install-and-configure-samba#4-setting-up-user-accounts-and-connecting-to-share) (Part 5 above)
+- Worked immediately once Samba was properly installed via the package manager
+
+**Takeaway / Warning for other Linux users**
+> If you're on a distro like Ubuntu (or Debian-based), skip the manual samba.org source build — just use the Ubuntu package-based tutorial. It's infinitely simpler and gets you working results without the dependency/config headaches of building from source.
+>
+> Also worth noting for Android 14 users: native SMB support is gone, so you'll need a third-party app. Solid Explorer worked reliably once Samba itself was properly configured on the server side.
+
+---
+
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
@@ -145,3 +217,6 @@ Once `~/storage/downloads` exists, you can scp straight into it going forward.
 | Key auth silently falls back to password | Wrong permissions on the phone | `chmod 700 ~/.ssh` and `chmod 600 ~/.ssh/authorized_keys` |
 | `ssh-copy-id`/password auth fails outright | No password set on the Termux user | Run `passwd` in Termux first |
 | `scp: failed to upload file ... to ~/storage/downloads` | `~/storage` doesn't exist yet | Run `termux-setup-storage` in Termux, grant the permission prompt |
+| Samba share invisible to Android's file system | Android 14 lacks native SMB support | Use a third-party SMB client app (Solid Explorer recommended) |
+| SMB share not discoverable via Solid Explorer | Samba not properly installed on the server | Reinstall Samba via distro package manager (e.g. Ubuntu tutorial), not from source |
+| Linux Mint "Connect to Server" fails to reach the share | Expected — client-side SMB test from Mint isn't the intended path | Connect from the Android SMB client (Solid Explorer) instead |
