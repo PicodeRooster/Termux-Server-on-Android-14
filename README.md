@@ -296,7 +296,9 @@ ssh -p 2222 u0_a123@<phone-ip>
 ⚠️ **Keep your original session (from Step 4) open** until this new connection is confirmed working. If the new port/config is broken, you still have a working fallback session to fix it from — don't close all sessions until you've verified access.
 
 ---
-## Part 7: System Diagnosis
+## Part 7: System Diagnostics
+
+The last step is to add additional functionality to the server by running periodic diagnostics. Instead of manually doing so, I created a script that runs on an endless loop and checks basic diagnostics. Below, an explanation of `diagnostics.sh`:
 
 ---
 
