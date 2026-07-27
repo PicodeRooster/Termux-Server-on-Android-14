@@ -300,6 +300,41 @@ ssh -p 2222 u0_a123@<phone-ip>
 
 The last step is to add additional functionality to the server by running periodic diagnostics. Instead of manually doing so, I created a script that runs on an endless loop and checks basic diagnostics. Below, an explanation of `diagnostics.sh`:
 
+```
+symbols=("/" "—" "\\" "|")`
+```
+
+The symbols array contains all the characters for our simple `cooldown` animation. I saw this on a PowerShell package installation, if I am not mistaken and wanted to create something similar for a while. I used Claude Code for assistance on this part of the script.
+
+```
+cooldown()
+``` 
+This is the function that Claude Code assisted me in creating. All it does is countdown to the given time in seconds and displays the animation while in affect. 
+
+```
+main()
+```
+The main diagnostics logic. More specifically, the script follows these steps:
+
+  1. Find and upgrade packages
+   ```
+    pkg update && pkg upgrade;
+   ```
+
+  2. Check phone's battery health
+    ```
+    termux-battery-status;
+    ```
+  3. Check all available storage in phone
+    ```
+    df -h;
+    ```
+  4. See network connection information
+    ```
+    termux-wifi-connectioninfo
+    ```
+After sleeping for 2 seconds on each step, it runs the cooldown animation, counting down 30 seconds before running the script again. This helps both maintain periodic system checks and is aesthetically pleasing to visualize — it looks cool while it runs.
+
 ---
 
 ## Technical Difficulties (Samba)
