@@ -178,7 +178,7 @@ Android 14 has no native SMB/SMBnative support — shared network connections ar
 
 The final products is a shared network drive where I can easily drag-and-drop folders or files. On my Linux machine, the structure looks like so:
 
-![Final Samba shared network drive on Linux machine.](/assets/Samba-network-drive.png "Linux/Samba shared network drive")
+![Final Samba shared network drive on Linux machine.](/assets/termux-server-on-linux.png "Linux/Samba shared network drive")
 
 ### Testing note (Linux Mint side)
 
