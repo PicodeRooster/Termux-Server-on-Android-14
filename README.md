@@ -298,7 +298,9 @@ ssh -p 2222 u0_a123@<phone-ip>
 ---
 ## Part 7: System Diagnostics
 
-The last step is to add additional functionality to the server by running periodic diagnostics. Instead of manually doing so, I created a script that runs on an endless loop and checks basic diagnostics. Below, an explanation of `diagnostics.sh`:
+The last step is to add additional functionality to the server by running periodic diagnostics. Instead of manually doing so, I created a script that runs on an endless loop and checks basic diagnostics. You will notice this is the only item in `Scripts` without a PowerShell equivalent. That's because this is the only script meant to be run *in* the phone. 
+
+Below, an explanation of `diagnostics.sh`:
 
 ```
 symbols=("/" "—" "\\" "|")`
@@ -334,6 +336,26 @@ The main diagnostics logic. More specifically, the script follows these steps:
     termux-wifi-connectioninfo
     ```
 After sleeping for 2 seconds on each step, it runs the cooldown animation, counting down 30 seconds before running the script again. This helps both maintain periodic system checks and is aesthetically pleasing to visualize — it looks cool while it runs.
+
+---
+## Scripts
+
+The `Scripts` directory contains useful scripts that hold common commands to interact with the server. Since the server is designed to connect from any major operating system, there is both a `.sh` for Unix-like systems, and a `.ps1` for Windows PowerShell. 
+
+I initially included these scripts, removed them later for security, then re-added them with the port and IP address modified. As they stand, they cannot connect to this project's server, even if on the same LAN. This is intentional. I have a separate version of each of these scripts with the real port and IP address to speed up file transfers when not connected to the Samba share folder on my Linux machine. The scripts on this repository are meant for demonstration. 
+
+Should you like to use them for your own project, be sure to edit to the correct port number and the IP address of your server. If using on Unix-like systems, remember to make them executable before running:
+
+```
+chmod +x connect.sh
+chmod 755 connect.sh
+```
+
+Then call the script like:
+
+```
+./connect.sh
+```
 
 ---
 
