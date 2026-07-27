@@ -188,7 +188,7 @@ Tried connecting from Linux Mint's built-in file sharing ("Connect to Server") t
 
 I originally created scripts to connect and transfer files. While I was proud to share these, I realized this was an unsecure practice. It not only included the server's static IP address, but was set to Termux's default, insecure 8022 port. 
 
-## Step 1 — Install sshd and locate the config file
+### Step 1 — Install sshd and locate the config file
 **Where: Phone**
 
 ```bash
@@ -205,7 +205,7 @@ sshd is the server software — it needs to live on the machine accepting connec
 
 ---
 
-## Step 2 — Generate an SSH key pair
+### Step 2 — Generate an SSH key pair
 **Where: Client**
 
 ```bash
@@ -220,7 +220,7 @@ Generate this on the client, not the phone — the private key should stay with 
 
 ---
 
-## Step 3 — Copy the public key to the phone
+### Step 3 — Copy the public key to the phone
 **Where: Client (pushes to Phone)**
 
 ```bash
@@ -239,7 +239,7 @@ chmod 600 ~/.ssh/authorized_keys
 
 ---
 
-## Step 4 — Test key-based login BEFORE disabling passwords
+### Step 4 — Test key-based login BEFORE disabling passwords
 **Where: Client**
 
 ```bash
@@ -252,7 +252,7 @@ Confirm you log in without being prompted for a password.
 
 ---
 
-## Step 5 — Edit sshd_config
+### Step 5 — Edit sshd_config
 **Where: Phone**
 
 ```bash
@@ -272,7 +272,7 @@ Notes:
 
 ---
 
-## Step 6 — Restart sshd
+### Step 6 — Restart sshd
 **Where: Phone**
 
 ```bash
@@ -284,7 +284,7 @@ This applies the config changes. Termux has no persistent init system, so this r
 
 ---
 
-## Step 7 — Test again on the new port
+### Step 7 — Test again on the new port
 **Where: Client**
 
 ```bash
@@ -296,6 +296,7 @@ ssh -p 2222 u0_a123@<phone-ip>
 ⚠️ **Keep your original session (from Step 4) open** until this new connection is confirmed working. If the new port/config is broken, you still have a working fallback session to fix it from — don't close all sessions until you've verified access.
 
 ---
+## Part 7: System Diagnosis
 
 ---
 
